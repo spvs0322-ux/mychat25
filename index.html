@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>FreeUp Chat - Real-time Messenger</title>
+    <!-- Google Fonts & Font Awesome for Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Main App Container */
+        .app-container {
+            width: 1300px;
+            max-width: 98vw;
+            height: 90vh;
+            background: #111827;
+            border-radius: 32px;
+            box-shadow: 0 25px 45px -12px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            animation: fadeSlideUp 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Auth Views (Login/Register) */
+        .auth-view {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at 20% 30%, #1e293b, #0f172a);
+            backdrop-filter: blur(2px);
+        }
+
+        .auth-card {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(12px);
+            border-radius: 48px;
+            padding: 40px 32px;
+            width: 420px;
+            max-width: 90%;
+            box-shadow: 0 20px 35px -10px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.2s;
+            animation: floatIn 0.4s ease;
+        }
+
+        @keyframes floatIn {
+            from { opacity: 0; transform: scale(0.96); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .auth-card h2 {
+            color: white;
+            font-weight: 600;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .auth-card p {
+            color: #94a3b8;
+            margin-bottom: 28px;
+            font-size: 14px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group i {
+            position: absolute;
+            margin-left: 18px;
+            margin-top: 16px;
+            color: #5b6e8c;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px 18px 14px 48px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 60px;
+            font-size: 15px;
+            color: white;
+            transition: all 0.2s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 2px rgba(16,185,129,0.3);
+        }
+
+        .btn {
+            width: 100%;
+            background: #10b981;
+            border: none;
+            padding: 14px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 16px;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 12px;
+        }
+
+        .btn:hover {
+            background: #059669;
+            transform: scale(0.98);
+            box-shadow: 0 8px 18px rgba(16,185,129,0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #3b4a62;
+            color: #cbd5e1;
+        }
+
+        .btn-outline:hover {
+            background: #2d3a4e;
+            transform: none;
+        }
+
+        .switch-text {
+            text-align: center;
+            margin-top: 24px;
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .switch-text span {
+            color: #10b981;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .error-msg {
+            background: rgba(239,68,68,0.2);
+            border-left: 3px solid #ef4444;
+            padding: 10px;
+            border-radius: 14px;
+            font-size: 13px;
+            color: #fecaca;
+            margin-bottom: 18px;
+        }
+
+        /* Chat Main UI */
+        .chat-main {
+            display: flex;
+            height: 100%;
+            width: 100%;
+            background: #0f172a;
+        }
+
+        /* Sidebar (users list) */
+        .sidebar {
+            width: 320px;
+            background: #1e293b;
+            border-right: 1px solid #2d3a4e;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.2s;
+        }
+
+        .sidebar-header {
+            padding: 20px 20px;
+            border-bottom: 1px solid #334155;
+            background: #0f172a;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .user-info h4 {
+            color: white;
+            font-weight: 600;
+        }
+
+        .user-info p {
+            color: #9ca3af;
+            font-size: 12px;
+        }
+
+        .logout-btn {
+            background: #2d3a4e;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 40px;
+            color: #f1f5f9;
+            cursor: pointer;
+            font-size: 13px;
+            transition: 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #ef4444;
+        }
+
+        .users-list-title {
+            padding: 16px 20px;
+            color: #94a3b8;
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            background: #1e293b;
+        }
+
+        .users-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 0;
+        }
+
+        .user-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 20px;
+            margin: 4px 12px;
+            border-radius: 18px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #1e293b;
+        }
+
+        .user-item:hover {
+            background: #2d3a4e;
+            transform: translateX(5px);
+        }
+
+        .user-item.active {
+            background: #10b98120;
+            border-left: 3px solid #10b981;
+        }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #10b981, #047857);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            color: white;
+            text-transform: uppercase;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .user-details {
+            flex: 1;
+        }
+
+        .user-details h4 {
+            color: #f1f5f9;
+            font-size: 16px;
+        }
+
+        /* Chat Area */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #0f172a;
+        }
+
+        .chat-header {
+            padding: 18px 24px;
+            background: #1e293b;
+            border-bottom: 1px solid #2d3a4e;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .chat-header .avatar {
+            width: 44px;
+            height: 44px;
+            font-size: 16px;
+        }
+
+        .chat-header h3 {
+            color: white;
+            font-weight: 500;
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background-image: radial-gradient(circle at 10% 30%, #1a2538 1.5px, transparent 1px);
+            background-size: 28px 28px;
+        }
+
+        .message {
+            max-width: 70%;
+            padding: 10px 16px;
+            border-radius: 24px;
+            font-size: 14px;
+            line-height: 1.4;
+            animation: messagePop 0.2s ease;
+            word-wrap: break-word;
+            position: relative;
+        }
+
+        @keyframes messagePop {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.outgoing {
+            background: #10b981;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 6px;
+        }
+
+        .message.incoming {
+            background: #2d3a4e;
+            color: #e2e8f0;
+            align-self: flex-start;
+            border-bottom-left-radius: 6px;
+        }
+
+        .message-time {
+            font-size: 10px;
+            opacity: 0.7;
+            text-align: right;
+            margin-top: 5px;
+        }
+
+        .message-input-area {
+            padding: 16px 24px;
+            background: #1e293b;
+            display: flex;
+            gap: 12px;
+            border-top: 1px solid #2d3a4e;
+        }
+
+        .message-input-area input {
+            flex: 1;
+            background: #0f172a;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 60px;
+            color: white;
+            font-size: 15px;
+            border: 1px solid #334155;
+        }
+
+        .message-input-area input:focus {
+            outline: none;
+            border-color: #10b981;
+        }
+
+        .send-btn {
+            background: #10b981;
+            border: none;
+            width: 50px;
+            border-radius: 50px;
+            cursor: pointer;
+            color: white;
+            font-size: 20px;
+            transition: 0.2s;
+        }
+
+        .send-btn:hover {
+            background: #059669;
+            transform: scale(1.02);
+        }
+
+        .empty-chat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #5b6e8c;
+            gap: 12px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #10b981;
+            border-radius: 10px;
+        }
+
+        @media (max-width: 700px) {
+            .sidebar {
+                width: 280px;
+            }
+            .message {
+                max-width: 85%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app-container" id="appContainer">
+    <!-- Auth UI placeholder -->
+    <div id="authView"></div>
+    <!-- Chat UI placeholder -->
+    <div id="chatView" style="display: none;"></div>
+</div>
+
+<script type="module">
+  // ----- FIREBASE IMPORTS -----
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+  import { getFirestore, collection, doc, setDoc, getDocs, query, where, addDoc, orderBy, onSnapshot, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+  
+  // Firebase Config (Provided)
+  const firebaseConfig = {
+    apiKey: "AIzaSyD4Gv3L9M_aFbn6MsSt70VegzgtclrZXJc",
+    authDomain: "freeup-676b2.firebaseapp.com",
+    projectId: "freeup-676b2",
+    storageBucket: "freeup-676b2.firebasestorage.app",
+    messagingSenderId: "715176184356",
+    appId: "1:715176184356:web:b1c279ceee78a43b6566b1",
+    measurementId: "G-JHFCBXGZ6Z"
+  };
+  
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  
+  // DOM elements placeholders
+  const authDiv = document.getElementById('authView');
+  const chatDiv = document.getElementById('chatView');
+  
+  // Global state
+  let currentUserObj = null;       // Firebase user
+  let currentUserDoc = null;       // {uid, username, email}
+  let allUsers = [];               // all other users
+  let selectedUser = null;         // selected user object
+  let messagesUnsubscribe = null;
+  let usersUnsubscribe = null;
+  
+  // Helper: Generate conversation id (sorted uids)
+  function getConversationId(uid1, uid2) {
+    return uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`;
+  }
+  
+  // Render Auth View (Login / Register Toggle)
+  let showLogin = true;
+  
+  function renderAuth() {
+    if (!authDiv) return;
+    authDiv.style.display = 'flex';
+    chatDiv.style.display = 'none';
+    const errorHtml = `<div id="authError" class="error-msg" style="display:none;"></div>`;
+    if (showLogin) {
+      authDiv.innerHTML = `
+        <div class="auth-view">
+          <div class="auth-card">
+            <h2><i class="fas fa-comment-dots"></i> Welcome Back</h2>
+            <p>Sign in to continue the chat</p>
+            <div id="loginErrorMsg" class="error-msg" style="display:none;"></div>
+            <div class="input-group"><i class="fas fa-envelope"></i><input type="email" id="loginEmail" placeholder="Email address" autocomplete="email"></div>
+            <div class="input-group"><i class="fas fa-lock"></i><input type="password" id="loginPassword" placeholder="Password"></div>
+            <button id="loginBtn" class="btn">Login <i class="fas fa-arrow-right"></i></button>
+            <div class="switch-text">Don't have an account? <span id="gotoRegister">Create Account</span></div>
+          </div>
+        </div>
+      `;
+      document.getElementById('loginBtn')?.addEventListener('click', handleLogin);
+      document.getElementById('gotoRegister')?.addEventListener('click', () => { showLogin = false; renderAuth(); });
+    } else {
+      authDiv.innerHTML = `
+        <div class="auth-view">
+          <div class="auth-card">
+            <h2><i class="fas fa-user-plus"></i> Join FreeUp</h2>
+            <p>Create your username & chat instantly</p>
+            <div id="regErrorMsg" class="error-msg" style="display:none;"></div>
+            <div class="input-group"><i class="fas fa-user"></i><input type="text" id="regUsername" placeholder="Username (visible to others)" autocomplete="off"></div>
+            <div class="input-group"><i class="fas fa-envelope"></i><input type="email" id="regEmail" placeholder="Email address"></div>
+            <div class="input-group"><i class="fas fa-lock"></i><input type="password" id="regPassword" placeholder="Password"></div>
+            <button id="registerBtn" class="btn">Register <i class="fas fa-rocket"></i></button>
+            <div class="switch-text">Already have an account? <span id="gotoLogin">Sign In</span></div>
+          </div>
+        </div>
+      `;
+      document.getElementById('registerBtn')?.addEventListener('click', handleRegister);
+      document.getElementById('gotoLogin')?.addEventListener('click', () => { showLogin = true; renderAuth(); });
+    }
+  }
+  
+  async function handleLogin() {
+    const email = document.getElementById('loginEmail')?.value.trim();
+    const password = document.getElementById('loginPassword')?.value;
+    const errorDiv = document.getElementById('loginErrorMsg');
+    if (!email || !password) {
+      showError(errorDiv, 'Please fill email & password');
+      return;
+    }
+    try {
+      const userCred = await signInWithEmailAndPassword(auth, email, password);
+      // User validated, onAuthStateChanged will handle UI loading
+    } catch (err) {
+      showError(errorDiv, err.message || 'Invalid credentials');
+    }
+  }
+  
+  async function handleRegister() {
+    const username = document.getElementById('regUsername')?.value.trim();
+    const email = document.getElementById('regEmail')?.value.trim();
+    const password = document.getElementById('regPassword')?.value;
+    const errorDiv = document.getElementById('regErrorMsg');
+    if (!username || !email || !password) {
+      showError(errorDiv, 'All fields are required');
+      return;
+    }
+    if (username.length < 3) {
+      showError(errorDiv, 'Username must be at least 3 characters');
+      return;
+    }
+    try {
+      // check if username already exists in Firestore
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where('username', '==', username));
+      const querySnap = await getDocs(q);
+      if (!querySnap.empty) {
+        showError(errorDiv, 'Username already taken. Choose another.');
+        return;
+      }
+      // Create auth user
+      const userCred = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCred.user;
+      // Store additional user info
+      await setDoc(doc(db, 'users', user.uid), {
+        uid: user.uid,
+        username: username,
+        email: email,
+        createdAt: serverTimestamp(),
+        avatarColor: '#10b981'
+      });
+      // auto login after registration handled by onAuthStateChanged
+    } catch (err) {
+      let msg = err.message;
+      if (msg.includes('email-already-in-use')) msg = 'Email already registered';
+      showError(errorDiv, msg);
+    }
+  }
+  
+  function showError(element, message) {
+    if (!element) return;
+    element.innerText = message;
+    element.style.display = 'block';
+    setTimeout(() => {
+      if (element) element.style.display = 'none';
+    }, 4000);
+  }
+  
+  // ---------- CHAT UI RENDER ----------
+  function renderChatUI() {
+    authDiv.style.display = 'none';
+    chatDiv.style.display = 'flex';
+    chatDiv.innerHTML = `
+      <div class="chat-main">
+        <div class="sidebar">
+          <div class="sidebar-header">
+            <div class="user-profile">
+              <div class="user-info">
+                <h4><i class="fas fa-user-circle"></i> <span id="currentUsername">${currentUserDoc?.username || 'User'}</span></h4>
+                <p>${currentUserObj?.email || ''}</p>
+              </div>
+              <button id="logoutSideBtn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Exit</button>
+            </div>
+          </div>
+          <div class="users-list-title"><i class="fas fa-users"></i> Contacts — Real-time</div>
+          <div class="users-container" id="usersListContainer">
+            <div style="padding:20px; text-align:center; color:#5b6e8c;"><i class="fas fa-spinner fa-pulse"></i> Loading users...</div>
+          </div>
+        </div>
+        <div class="chat-area" id="dynamicChatArea">
+          <div class="empty-chat">
+            <i class="fas fa-comments" style="font-size: 48px; opacity:0.4;"></i>
+            <p>Select a contact to start messaging</p>
+          </div>
+        </div>
+      </div>
+    `;
+    document.getElementById('logoutSideBtn')?.addEventListener('click', handleLogout);
+    // fetch users + realtime listener
+    listenToUsersRealtime();
+  }
+  
+  // Load all other users and update list dynamically
+  function listenToUsersRealtime() {
+    if (usersUnsubscribe) usersUnsubscribe();
+    const usersRef = collection(db, 'users');
+    // Listen for any change in users collection
+    usersUnsubscribe = onSnapshot(usersRef, (snapshot) => {
+      const usersList = [];
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        if (data.uid !== currentUserObj?.uid) {
+          usersList.push({ uid: data.uid, username: data.username, email: data.email });
+        }
+      });
+      allUsers = usersList;
+      renderUsersList();
+    }, (err) => { console.error(err); });
+  }
+  
+  function renderUsersList() {
+    const container = document.getElementById('usersListContainer');
+    if (!container) return;
+    if (allUsers.length === 0) {
+      container.innerHTML = `<div style="padding:20px; text-align:center; color:#6c7a91;"><i class="fas fa-user-friends"></i> No other users yet</div>`;
+      return;
+    }
+    container.innerHTML = allUsers.map(user => `
+      <div class="user-item ${selectedUser?.uid === user.uid ? 'active' : ''}" data-uid="${user.uid}" data-username="${user.username}">
+        <div class="avatar">${user.username.charAt(0).toUpperCase()}</div>
+        <div class="user-details">
+          <h4>${escapeHtml(user.username)}</h4>
+          <small style="color:#7e8aa2;">${escapeHtml(user.email.split('@')[0])}</small>
+        </div>
+      </div>
+    `).join('');
+    // attach click listeners
+    document.querySelectorAll('.user-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const uid = el.dataset.uid;
+        const username = el.dataset.username;
+        const foundUser = allUsers.find(u => u.uid === uid);
+        if (foundUser) {
+          selectChatUser(foundUser);
+        }
+      });
+    });
+  }
+  
+  // Select user and open chat window with realtime messages
+  let currentChatArea = null;
+  function selectChatUser(user) {
+    if (selectedUser?.uid === user.uid) return;
+    selectedUser = user;
+    // re-render chat area with fresh listener
+    if (messagesUnsubscribe) messagesUnsubscribe();
+    renderChatAreaWithUser(selectedUser);
+    // Update active style in users list
+    renderUsersList();  // refreshes active highlight
+    // load messages real-time
+    const conversationId = getConversationId(currentUserObj.uid, selectedUser.uid);
+    const messagesRef = collection(db, 'messages');
+    const q = query(messagesRef, where('conversationId', '==', conversationId), orderBy('timestamp', 'asc'));
+    messagesUnsubscribe = onSnapshot(q, (snapshot) => {
+      const messagesList = [];
+      snapshot.forEach(docSnap => {
+        messagesList.push({ id: docSnap.id, ...docSnap.data() });
+      });
+      displayMessages(messagesList);
+    }, (err) => console.error(err));
+  }
+  
+  function renderChatAreaWithUser(user) {
+    const chatAreaDiv = document.getElementById('dynamicChatArea');
+    if (!chatAreaDiv) return;
+    chatAreaDiv.innerHTML = `
+      <div class="chat-header">
+        <div class="avatar">${user.username.charAt(0).toUpperCase()}</div>
+        <h3>${escapeHtml(user.username)}</h3>
+      </div>
+      <div class="messages-container" id="messagesContainer">
+        <div style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-pulse"></i> Loading messages...</div>
+      </div>
+      <div class="message-input-area">
+        <input type="text" id="messageInput" placeholder="Type a message..." autocomplete="off">
+        <button id="sendMsgBtn" class="send-btn"><i class="fas fa-paper-plane"></i></button>
+      </div>
+    `;
+    const sendBtn = document.getElementById('sendMsgBtn');
+    const inputField = document.getElementById('messageInput');
+    const sendMessageHandler = () => {
+      const text = inputField?.value.trim();
+      if (!text || !selectedUser) return;
+      sendTextMessage(text);
+      inputField.value = '';
+      inputField.focus();
+    };
+    sendBtn?.addEventListener('click', sendMessageHandler);
+    inputField?.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessageHandler(); });
+  }
+  
+  async function sendTextMessage(text) {
+    if (!currentUserObj || !selectedUser) return;
+    const conversationId = getConversationId(currentUserObj.uid, selectedUser.uid);
+    try {
+      await addDoc(collection(db, 'messages'), {
+        conversationId: conversationId,
+        fromUserId: currentUserObj.uid,
+        toUserId: selectedUser.uid,
+        text: text,
+        timestamp: serverTimestamp()
+      });
+      // scroll will happen in displayMessages
+    } catch(err) { console.error("Send error", err); }
+  }
+  
+  function displayMessages(messages) {
+    const container = document.getElementById('messagesContainer');
+    if (!container) return;
+    if (messages.length === 0) {
+      container.innerHTML = `<div class="empty-chat" style="height:auto; padding:40px;"><i class="far fa-comment-dots"></i> No messages yet. Say hi!</div>`;
+      return;
+    }
+    container.innerHTML = messages.map(msg => {
+      const isOutgoing = msg.fromUserId === currentUserObj?.uid;
+      const time = msg.timestamp ? new Date(msg.timestamp.toDate()).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : 'Just now';
+      return `
+        <div class="message ${isOutgoing ? 'outgoing' : 'incoming'}">
+          <div>${escapeHtml(msg.text)}</div>
+          <div class="message-time">${time}</div>
+        </div>
+      `;
+    }).join('');
+    // auto-scroll to bottom
+    container.scrollTop = container.scrollHeight;
+  }
+  
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+      return c;
+    });
+  }
+  
+  async function handleLogout() {
+    try {
+      if (messagesUnsubscribe) messagesUnsubscribe();
+      if (usersUnsubscribe) usersUnsubscribe();
+      await signOut(auth);
+      selectedUser = null;
+      currentUserObj = null;
+      currentUserDoc = null;
+      allUsers = [];
+      // Go back to auth UI
+      showLogin = true;
+      renderAuth();
+    } catch(e) { console.warn(e); }
+  }
+  
+  // Fetch current user's Firestore doc and then bootstrap chat UI
+  async function loadCurrentUserDoc(user) {
+    const userDocRef = doc(db, 'users', user.uid);
+    const docSnap = await getDoc(userDocRef);
+    if (docSnap.exists()) {
+      currentUserDoc = docSnap.data();
+      renderChatUI();
+    } else {
+      // fallback: create if somehow missing (defensive)
+      await setDoc(doc(db, 'users', user.uid), {
+        uid: user.uid,
+        username: user.email.split('@')[0],
+        email: user.email,
+        createdAt: serverTimestamp()
+      });
+      const newSnap = await getDoc(userDocRef);
+      currentUserDoc = newSnap.data();
+      renderChatUI();
+    }
+  }
+  
+  // AUTH STATE LISTENER
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      currentUserObj = user;
+      // fetch user doc from firestore
+      const userDocRef = doc(db, 'users', user.uid);
+      const docSnap = await getDoc(userDocRef);
+      if (docSnap.exists()) {
+        currentUserDoc = docSnap.data();
+        renderChatUI();
+      } else {
+        // create missing document (for users that registered via email only but haven't set username)
+        let suggestedUsername = user.email.split('@')[0];
+        // need avoid dup? but we set anyway
+        await setDoc(doc(db, 'users', user.uid), {
+          uid: user.uid,
+          username: suggestedUsername,
+          email: user.email,
+          createdAt: serverTimestamp()
+        });
+        const newSnap = await getDoc(userDocRef);
+        currentUserDoc = newSnap.data();
+        renderChatUI();
+      }
+    } else {
+      // Show auth
+      if (messagesUnsubscribe) messagesUnsubscribe();
+      if (usersUnsubscribe) usersUnsubscribe();
+      currentUserObj = null;
+      selectedUser = null;
+      allUsers = [];
+      showLogin = true;
+      renderAuth();
+    }
+  });
+  
+  // initial render
+  renderAuth();
+</script>
+</body>
+</html>
